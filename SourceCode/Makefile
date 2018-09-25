@@ -1,0 +1,17 @@
+# cryptomodule FileOperations main Commonlib
+
+obj-m 								:=	cryptomodule.o
+CFLAGS_cryptomodule.	:=	-DDEBUG
+cryptomodule-objs 		:=	main.o FileOperations.o
+
+all:
+	clear
+	clear
+	@rm -f cryptomodule.ko test_cryptomodule
+	gcc test_cryptomodule.c -o test_cryptomodule
+	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
+	@rm -f *.mod.c *.mod.o *.o
+
+clean:
+	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
+	rm -f other/ioctl other/cat_noblock *.plist test_cryptomodule
