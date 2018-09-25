@@ -14,7 +14,7 @@ static int __init cryptomodule_init(void)
     int i;
     pr_info("[%s] | Initializated\n", DEVICE_NAME);
 
-    for( i = 0; i < KEY_LENGHT; i++ )
+    for( i = 0; i < (KEY_LENGHT+1); i++ )
     {
         if( key[i] == '\0' )
             key[i] = '0';
@@ -23,16 +23,24 @@ static int __init cryptomodule_init(void)
         if( i == (KEY_LENGHT-1) )
         {
             key[i] = '\0';
-            break;   
+            break;
         }
     }
 
     pr_info("[%s] | Key is a string: %s\n", DEVICE_NAME, key);
+
+    if( init_fops() != 0 )
+    {
+        pr_crit("[%s] | ERRO! <init_fops>\n", DEVICE_NAME);
+    }
+
     return 0;
 }
 
 static void __exit cryptomodule_exit(void)
 {
+    cleanup_fops();
+
     pr_info("[%s] | Terminated\n", DEVICE_NAME);
 }
 

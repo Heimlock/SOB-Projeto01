@@ -28,14 +28,40 @@
  * Global Variables
  */
 
+static DEFINE_MUTEX( bufferLock );
 static int  Device_Open = 0;        //  Will Become a Mutex
 
-static char *key = "0000000000000000";
+static char *key = "00000000000000000";
+static int  majorNumber;
+static char msg[BUF_LEN];
+static int  msg_size = 0;
+static char *msg_Ptr;
 
 /*
  *  Functions
  */
 static int  __init cryptomodule_init( void );
 static void __exit cryptomodule_exit( void );
+
+int     init_fops( void );
+void    cleanup_fops( void );
+int     device_open( struct inode *, struct file * );
+int     device_release( struct inode *, struct file * );
+ssize_t device_read( struct file *, char *, size_t , loff_t * );
+ssize_t device_write( struct file *, const char *, size_t , loff_t * );
+
+/*
+ *  Structs
+ */
+
+static struct class     *cls;
+static struct device    *device = NULL;
+
+static struct file_operations crypto_fops = {
+    .read    =  device_read,
+    .write   =  device_write,
+    .open    =  device_open,
+    .release =  device_release
+};
 
 #endif
