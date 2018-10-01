@@ -35,6 +35,7 @@ static int  Device_Open = 0;        //  Will Become a Mutex
 static char *key = "0000000000000000";
 static int  majorNumber;
 static char buffer[BUF_LEN];
+static char bufferOUT[BUF_LEN];
 static int  buffer_size = 0;
 static char *buffer_Ptr;
 

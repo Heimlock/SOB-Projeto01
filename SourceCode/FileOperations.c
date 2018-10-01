@@ -83,7 +83,7 @@ int device_release(struct inode *inode, struct file *file)
 /*
  *      UserSpace Attemps to Read
  */
-ssize_t device_read( struct file *filp, char *buffer_out, size_t length, loff_t *offset )
+ssize_t device_read( struct file *filp, char *buffer_usr, size_t length, loff_t *offset )
 {
     unsigned long  bytesRead = 0;
     int ret;
@@ -102,7 +102,7 @@ ssize_t device_read( struct file *filp, char *buffer_out, size_t length, loff_t 
             bytesRead   =   length;
         }
         //                  to          from        length
-        ret = copy_to_user( buffer_out, buffer_Ptr, bytesRead );
+        ret = copy_to_user( buffer_usr, bufferOUT, bytesRead );
         if( ret != 0 )
         {
             pr_warning("[%s] | %d bytes Wont be Read. Bytes Read = %lu\n", DEVICE_NAME, ret, (bytesRead - ret));
@@ -120,7 +120,7 @@ ssize_t device_read( struct file *filp, char *buffer_out, size_t length, loff_t 
 /*
  *      UserSpace Attemps to Write
  */
-ssize_t device_write( struct file *filp, const char *buffer_in, size_t length, loff_t *offset )
+ssize_t device_write( struct file *filp, const char *buffer_usr, size_t length, loff_t *offset )
 {
     int ret, i;
     int operation = -1;
@@ -139,7 +139,7 @@ ssize_t device_write( struct file *filp, const char *buffer_in, size_t length, l
     {
         bytes2Write   =   length;
     }
-    ret = copy_from_user( tempBuffer, buffer_in, bytes2Write );
+    ret = copy_from_user( tempBuffer, buffer_usr, bytes2Write );
     if( ret != 0 )
     {
         pr_warning("[%s] | %d bytes Wont be Written. Bytes Written = %lu\n", DEVICE_NAME, ret, bytes2Write);
@@ -185,7 +185,7 @@ ssize_t device_write( struct file *filp, const char *buffer_in, size_t length, l
       }
       case SUMHASH:
       {
-        if( sumHash( buffer_Ptr, buffer_Ptr ) == -1 )
+        if( sumHash( buffer_Ptr, bufferOUT ) == -1 )
         {
               pr_err( "[%s] | ERROR! sumHash Function\n", DEVICE_NAME);
         }

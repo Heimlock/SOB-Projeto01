@@ -14,7 +14,7 @@ static int __init cryptomodule_init(void)
     int i;
     pr_info("[%s] | Initializated\n", DEVICE_NAME);
 
-    for( i = 0; i < KEY_LENGHT; i++ )
+    for( i = 0; i < (KEY_LENGHT+1); i++ )
     {
         if( key[i] == '\0' )
             key[i] = '0';
