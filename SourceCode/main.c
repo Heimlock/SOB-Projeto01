@@ -20,7 +20,7 @@ static int __init cryptomodule_init(void)
             key[i] = '0';
 
         //  Verify if it has reached the end
-        if( i == (KEY_LENGHT-1) )
+        if( i == (KEY_LENGHT) )
         {
             key[i] = '\0';
             break;
