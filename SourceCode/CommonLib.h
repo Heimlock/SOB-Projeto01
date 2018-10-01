@@ -9,6 +9,7 @@
 #define DEVICE_NAME     "cryptomodule"
 #define KEY_LENGHT      16
 #define BUF_LEN         80
+#define SHA256_LENGTH   32
 
 #include <linux/kernel.h>
 #include <linux/module.h>
@@ -31,11 +32,12 @@
 static DEFINE_MUTEX( bufferLock );
 static int  Device_Open = 0;        //  Will Become a Mutex
 
-static char *key = "00000000000000000";
+static char *key = "0000000000000000";
 static int  majorNumber;
-static char msg[BUF_LEN];
-static int  msg_size = 0;
-static char *msg_Ptr;
+static char buffer[BUF_LEN];
+static int  buffer_size = 0;
+static char *buffer_Ptr;
+
 
 /*
  *  Functions
@@ -50,6 +52,10 @@ int     device_release( struct inode *, struct file * );
 ssize_t device_read( struct file *, char *, size_t , loff_t * );
 ssize_t device_write( struct file *, const char *, size_t , loff_t * );
 
+int     sumHash( char *, char * );
+// void    show_hash_result(char *, char *);
+void    show_hash_result( char * );
+
 /*
  *  Structs
  */
@@ -63,5 +69,13 @@ static struct file_operations crypto_fops = {
     .open    =  device_open,
     .release =  device_release
 };
+
+/*
+ *  Enums
+ */
+
+typedef	enum STATES	{
+ 	ENCRYPT, DECRYPT, SUMHASH
+ } STATES;
 
 #endif

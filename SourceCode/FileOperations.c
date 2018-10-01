@@ -58,7 +58,7 @@ int device_open(struct inode *inode, struct file *file)
 
     Device_Open++;
 
-    msg_Ptr = msg;
+    buffer_Ptr = buffer;
     try_module_get(THIS_MODULE);
 
     return 0;
@@ -83,7 +83,7 @@ int device_release(struct inode *inode, struct file *file)
 /*
  *      UserSpace Attemps to Read
  */
-ssize_t device_read( struct file *filp, char *buffer, size_t length, loff_t *offset )
+ssize_t device_read( struct file *filp, char *buffer_out, size_t length, loff_t *offset )
 {
     unsigned long  bytesRead = 0;
     int ret;
@@ -91,7 +91,7 @@ ssize_t device_read( struct file *filp, char *buffer, size_t length, loff_t *off
     mutex_lock(&bufferLock);
 
     //  Verify if has anything on the Buffer
-    if( msg_size != 0 )
+    if( buffer_size != 0 )
     {
         if( length > BUF_LEN )
         {
@@ -101,8 +101,8 @@ ssize_t device_read( struct file *filp, char *buffer, size_t length, loff_t *off
         {
             bytesRead   =   length;
         }
-        //                  to      from     length
-        ret = copy_to_user( buffer, msg_Ptr, bytesRead );
+        //                  to          from        length
+        ret = copy_to_user( buffer_out, buffer_Ptr, bytesRead );
         if( ret != 0 )
         {
             pr_warning("[%s] | %d bytes Wont be Read. Bytes Read = %lu\n", DEVICE_NAME, ret, (bytesRead - ret));
@@ -120,13 +120,16 @@ ssize_t device_read( struct file *filp, char *buffer, size_t length, loff_t *off
 /*
  *      UserSpace Attemps to Write
  */
-ssize_t device_write( struct file *filp, const char *buffer, size_t length, loff_t *offset )
+ssize_t device_write( struct file *filp, const char *buffer_in, size_t length, loff_t *offset )
 {
-    int  ret, i;
+    int ret, i;
+    int operation = -1;
     unsigned long  bytes2Write = 0;
     char tempBuffer[BUF_LEN];
 
     mutex_lock(&bufferLock);
+
+    buffer_size    =   0;
 
     if( length > BUF_LEN )
     {
@@ -136,7 +139,7 @@ ssize_t device_write( struct file *filp, const char *buffer, size_t length, loff
     {
         bytes2Write   =   length;
     }
-    ret = copy_from_user( tempBuffer, buffer, bytes2Write );
+    ret = copy_from_user( tempBuffer, buffer_in, bytes2Write );
     if( ret != 0 )
     {
         pr_warning("[%s] | %d bytes Wont be Written. Bytes Written = %lu\n", DEVICE_NAME, ret, bytes2Write);
@@ -151,15 +154,49 @@ ssize_t device_write( struct file *filp, const char *buffer, size_t length, loff
         pr_alert( "[%s] | Invalid Argument. (buffer[%d]=='%c')\n", DEVICE_NAME, 0, tempBuffer[0] );
         return -EINVAL;
     }
+
+    //  ENCRYPT
+    if( tempBuffer[0] == 'c' )        operation = ENCRYPT;
+    else if ( tempBuffer[0] == 'd' )  operation = DECRYPT;
+    else if ( tempBuffer[0] == 'h' )  operation = SUMHASH;
+
     //  Go Through the TempBuffer copy it to the Actual Buffer
-    for( i = 0; i < bytes2Write; i++ )
+    //  [0] == Operation & [1] == ' '
+    for( i = 0; i < (bytes2Write - 2); i++ )
     {
-        msg_Ptr[i] = tempBuffer[i];
+      buffer[i]  = tempBuffer[i+2];
+    }
+    buffer_size    =   bytes2Write - 2;
+    buffer[buffer_size+1] = '\0';
+
+    // printk("[%s] | Buffer: %s\n[%s] | TempBuffer: %s\n", DEVICE_NAME, buffer, DEVICE_NAME, tempBuffer);
+
+    switch (operation)
+    {
+      case ENCRYPT:
+      {
+          pr_err( "[%s] | Not Implemented yet\n", DEVICE_NAME);
+        break;
+      }
+      case DECRYPT:
+      {
+          pr_err( "[%s] | Not Implemented yet\n", DEVICE_NAME);
+        break;
+      }
+      case SUMHASH:
+      {
+        if( sumHash( buffer_Ptr, buffer_Ptr ) == -1 )
+        {
+              pr_err( "[%s] | ERROR! sumHash Function\n", DEVICE_NAME);
+        }
+        buffer_size = SHA256_LENGTH;
+        // show_hash_result( buffer_Ptr );
+        break;
+      }
     }
 
-    msg_size    =   bytes2Write;
-    pr_info( "[%s] | Buffer Stored: '%s'\n", DEVICE_NAME, msg_Ptr );
-    pr_info( "[%s] | Bytes Available: '%d'\n", DEVICE_NAME, BUF_LEN - msg_size );
+    pr_info( "[%s] | Buffer Stored: '%s'\n", DEVICE_NAME, buffer_Ptr );
+    pr_info( "[%s] | Bytes Available: '%d'\n", DEVICE_NAME, BUF_LEN - buffer_size );
 
     mutex_unlock(&bufferLock);
     return bytes2Write;
