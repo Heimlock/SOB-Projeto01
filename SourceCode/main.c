@@ -14,7 +14,7 @@ static int __init cryptomodule_init(void)
     int i;
     pr_info("[%s] | Initializated\n", DEVICE_NAME);
 
-    for( i = 0; i < (KEY_LENGHT+1); i++ )
+    for( i = 0; i < KEY_LENGHT; i++ )
     {
         if( key[i] == '\0' )
             key[i] = '0';
@@ -33,6 +33,11 @@ static int __init cryptomodule_init(void)
     {
         pr_crit("[%s] | ERRO! <init_fops>\n", DEVICE_NAME);
     }
+
+    // char *plaintext = "Felipe Moreira Ferreira";
+    // char hash_sha256[SHA256_LENGTH];
+    // sumHash( plaintext, hash_sha256 );
+    // show_hash_result( plaintext, hash_sha256 );
 
     return 0;
 }

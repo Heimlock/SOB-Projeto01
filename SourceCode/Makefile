@@ -1,8 +1,8 @@
-# cryptomodule FileOperations main Commonlib
+# cryptomodule FileOperations main Commonlib sumHash
 
 obj-m 								:=	cryptomodule.o
-CFLAGS_cryptomodule.	:=	-DDEBUG
-cryptomodule-objs 		:=	main.o FileOperations.o
+CFLAGS_cryptomodule.o :=	-DDEBUG
+cryptomodule-objs 		:=	main.o FileOperations.o sumHash.o
 
 all:
 	clear
