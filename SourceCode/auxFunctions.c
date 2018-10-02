@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/types.h>
+#include <regex.h>
 
 // validarKey
 char * validarKey(char* inputKey) {
@@ -12,6 +14,28 @@ char * validarKey(char* inputKey) {
     s++;
     countSize++;
   }
+
+  // regex to check for special characters
+  regex_t regex;
+  int reti;
+  // compile regex
+  reti = regcomp(&regex, "^[A-Z0-9]", 0);
+  if(reti) {
+    printf("regex nao compilada");
+    exit(1);
+  }
+  // execute regex
+  reti = regexec(&regex, inputKey, 0, NULL, 0);
+  if(!reti) {
+    printf("regex match -> string dentro do padrao");
+  } else if(reti == REG_NOMATCH) {
+    printf("regex no match -> string fora do padrao");
+  } else {
+    printf("regex match falhou");
+  }
+
+  // free compiled regex
+  regfree(&regex);
 
   char outputKey[countSize];
   for(i = 0; i < countSize; i++) {
@@ -27,7 +51,6 @@ char * validarKey(char* inputKey) {
   }
 
   return outputKey;
-
 }
 
 // validarInput
