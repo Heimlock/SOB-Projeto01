@@ -35,25 +35,31 @@ MODULE_PARM_DESC(phrase, "Is the text to be incrypt");
 static int __init hello_5_init(void){
 
   int count = 0;
+  char myKey[17];
 
-  while (count <16) {
+  while (key[count] != '\0') {
     //checking if is letter or number
       if ((key[count] > 64 && key[count] < 71)||(key[count] > 96 && key[count] < 103) || (key[count] > 47 && key[count] < 58)) {
         if (key[count] > 96 && key[count] < 103) {
-          key[count] = key[count]-32;
+          myKey[count] = key[count]-32;
         }
+        myKey[count] = key[count];
         count++;
       }
       else{
-        key[count] = '0';
+        myKey[count] = '0';
         count++;
       }
 
   }
-  key[count] = '\0';
-  pr_info("Count: %d\n", count);
 
+  while (count < 16) {
+    myKey[count] = '0';
+    count++;
+  }
+  myKey[count] = '\0';
   pr_info("key is a string: %s\n", key);
+  pr_info("Count: %d\n", count);
   pr_info("phrase is: %s\n",phrase);
   //pr_info("size: %d\n", count);
   return 0;
