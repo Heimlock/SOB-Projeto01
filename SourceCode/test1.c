@@ -8,9 +8,8 @@
 #include <linux/stat.h>
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Luiz");
-static char *mystring = "blah";
-static int myintArray[2] = { -1, -1 };
-static int arr_argc = 0;
+static char *key = "0000000000000000";
+static char *phrase = "0000000000000000";
 /*
  * module_param(foo, int, 0000)
  * The first param is the parameters name
@@ -18,8 +17,11 @@ static int arr_argc = 0;
  * The final argument is the permissions bits,
  * for exposing parameters in sysfs (if non-zero) at a later stage.
 */
-module_param(mystring, charp, 0000);
-MODULE_PARM_DESC(mystring, "A character string");
+module_param(key, charp, 0000);
+MODULE_PARM_DESC(key, "Is the key for crypto");
+
+module_param(phrase, charp, 0000);
+MODULE_PARM_DESC(phrase, "Is the text to be incrypt");
 /*
  * module_param_array(name, type, num, perm);
  * The first param is the parameter's (in this case the array's) name
@@ -28,38 +30,32 @@ MODULE_PARM_DESC(mystring, "A character string");
  * of elements of the array initialized by the user at module loading time
  * The fourth argument is the permission bits
 */
-module_param_array(myintArray, int, &arr_argc, 0000);
-MODULE_PARM_DESC(myintArray, "An array of integers");
+//static void validarKey(char  *key);
 
 static int __init hello_5_init(void){
-  int i, count = 0;
 
-  while ( count < 16) {
+  int count = 0;
+
+  while (count <16) {
     //checking if is letter or number
-      if ((mystring[count] > 64 && mystring[count] < 71)||(mystring[count] > 96 && mystring[count] < 103) || (mystring[count] > 47 && mystring[count] < 58)) {
-        //change if minor letter
-        if (mystring[count] > 96 && mystring[count] < 103) {
-          mystring[count] = mystring[count]-32;
+      if ((key[count] > 64 && key[count] < 71)||(key[count] > 96 && key[count] < 103) || (key[count] > 47 && key[count] < 58)) {
+        if (key[count] > 96 && key[count] < 103) {
+          key[count] = key[count]-32;
         }
         count++;
       }
       else{
-        //change if not a number or letter to 0
-        mystring[count] = '0';
+        key[count] = '0';
         count++;
       }
-  }
-  mystring[count++] = '\0';
 
-
-  pr_info("mystring is a string: %s\n", mystring);
-  pr_info("size: %d\n", count);
-  //count = validarKey();
-  for (i = 0; i < (sizeof myintArray / sizeof (int)); i++)
-  {
-    pr_info("myintArray[%d] = %d\n", i, myintArray[i]);
   }
-  pr_info("got %d arguments for myintArray.\n", arr_argc);
+  key[count] = '\0';
+  pr_info("Count: %d\n", count);
+
+  pr_info("key is a string: %s\n", key);
+  pr_info("phrase is: %s\n",phrase);
+  //pr_info("size: %d\n", count);
   return 0;
 }
 
@@ -68,5 +64,9 @@ static void __exit hello_5_exit(void)
 {
   pr_info("Goodbye, world 5\n");
 }
+
+/*static void validarKey(char *key){
+}*/
+
 module_init(hello_5_init);
 module_exit(hello_5_exit);
