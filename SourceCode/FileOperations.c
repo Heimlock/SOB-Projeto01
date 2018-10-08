@@ -127,6 +127,8 @@ ssize_t device_write( struct file *filp, const char *buffer_usr, size_t length, 
     unsigned long  bytes2Write = 0;
     char tempBuffer[BUF_LEN];
 
+unsigned char my_key[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f};
+
     mutex_lock(&bufferLock);
 
     buffer_size    =   0;
@@ -162,7 +164,8 @@ ssize_t device_write( struct file *filp, const char *buffer_usr, size_t length, 
 
     //  Go Through the TempBuffer copy it to the Actual Buffer
     //  [0] == Operation & [1] == ' '
-    for( i = 0; i < (bytes2Write - 2); i++ )
+    // for( i = 0; i < (bytes2Write - 2); i++ )
+    for( i = 0; i < 32; i++ )
     {
       buffer[i]  = tempBuffer[i+2];
     }
@@ -175,27 +178,38 @@ ssize_t device_write( struct file *filp, const char *buffer_usr, size_t length, 
     {
       case ENCRYPT:
       {
-          pr_err( "[%s] | Not Implemented yet\n", DEVICE_NAME);
-        break;
+          // pr_err( "[%s] | Not Implemented yet\n", DEVICE_NAME);
+          // if( encrypt( key, buffer_Ptr, bufferOUT, buffer_size ) < 0 )
+          if( encrypt( my_key, buffer_Ptr, bufferOUT, 32 ) < 0 )
+          {
+                pr_err( "[%s] | ERROR! encrypt Function\n", DEVICE_NAME);
+          }
+          break;
       }
       case DECRYPT:
       {
-          pr_err( "[%s] | Not Implemented yet\n", DEVICE_NAME);
-        break;
+          // pr_err( "[%s] | Not Implemented yet\n", DEVICE_NAME);
+          // if( decrypt( key, buffer_Ptr, bufferOUT, buffer_size ) < 0 )
+          if( decrypt( my_key, buffer_Ptr, bufferOUT, buffer_size ) < 0 )
+          {
+                pr_err( "[%s] | ERROR! encrypt Function\n", DEVICE_NAME);
+          }
+          break;
       }
       case SUMHASH:
       {
-        if( sumHash( buffer_Ptr, bufferOUT ) == -1 )
-        {
-              pr_err( "[%s] | ERROR! sumHash Function\n", DEVICE_NAME);
-        }
-        buffer_size = SHA256_LENGTH;
-        // show_hash_result( buffer_Ptr );
-        break;
+          if( sumHash( buffer_Ptr, bufferOUT ) == -1 )
+          {
+                pr_err( "[%s] | ERROR! sumHash Function\n", DEVICE_NAME);
+          }
+          buffer_size = SHA256_LENGTH;
+          // show_hash_result( buffer_Ptr );
+          break;
       }
     }
 
     pr_info( "[%s] | Buffer Stored: '%s'\n", DEVICE_NAME, buffer_Ptr );
+    dump_hex( bufferOUT, buffer_size, "BufferOUT Stored" );
     pr_info( "[%s] | Bytes Available: '%d'\n", DEVICE_NAME, BUF_LEN - buffer_size );
 
     mutex_unlock(&bufferLock);
