@@ -6,6 +6,8 @@
 #ifndef _COMMON_H
 #define _COMMON_H
 
+#define DEBUG
+
 #define DEVICE_NAME     "cryptomodule"
 #define KEY_LENGHT      16
 #define BUF_LEN         80
@@ -24,6 +26,11 @@
 #include <linux/poll.h>
 #include <linux/cdev.h>
 #include <linux/mutex.h>
+#include <linux/types.h>
+#include <linux/errno.h>
+#include <linux/crypto.h>
+#include <linux/scatterlist.h>
+#include <linux/vmalloc.h>
 
 /*
  * Global Variables
@@ -32,7 +39,9 @@
 static DEFINE_MUTEX( bufferLock );
 static int  Device_Open = 0;        //  Will Become a Mutex
 
+// static char key[KEY_LENGHT] = "0000000000000000";
 static char *key = "0000000000000000";
+// static unsigned char *key = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 static int  majorNumber;
 static char buffer[BUF_LEN];
 static char bufferOUT[BUF_LEN];
@@ -54,8 +63,11 @@ ssize_t device_read( struct file *, char *, size_t , loff_t * );
 ssize_t device_write( struct file *, const char *, size_t , loff_t * );
 
 int     sumHash( char *, char * );
-// void    show_hash_result(char *, char *);
 void    show_hash_result( char * );
+
+int     encrypt( u8 key[], char input[], char output[], size_t size );
+int     decrypt( u8 key[], char input[], char output[], size_t size );
+void    dump_hex( char input[], int size, char *info );
 
 /*
  *  Structs
