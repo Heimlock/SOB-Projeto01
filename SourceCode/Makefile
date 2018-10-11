@@ -15,7 +15,7 @@
 #obj-m += hello-2.o
 #obj-m += hello-3.o
 #obj-m += hello-4.o
-obj-m += test2.o
+obj-m += validet_Function.o
 
 #obj-m += chardev.o
 
