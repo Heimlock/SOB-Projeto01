@@ -7,27 +7,30 @@ MODULE_DESCRIPTION("Main File");
 MODULE_SUPPORTED_DEVICE(DEVICE_NAME);
 
 module_param(key, charp, 0000);
-MODULE_PARM_DESC(key, "Key String - 16bits lenght");
+MODULE_PARM_DESC(key, "Key String - 32bytes lenght");
 
 static int __init cryptomodule_init(void)
 {
-    int i;
+    int   i = 0;
+    char  keyBuffer[2 * KEY_LENGHT];
     pr_info("[%s] | Initializated\n", DEVICE_NAME);
 
-    for( i = 0; i < (KEY_LENGHT+1); i++ )
+    //  Validar Entrada
+    for( i = 0; i < (2 * KEY_LENGHT); i++  )
     {
-        if( key[i] == '\0' )
-            key[i] = '0';
-
-        //  Verify if it has reached the end
-        if( i == (KEY_LENGHT) )
+        if( key[i] != '\0' )
+          keyBuffer[i] = key[i];
+        else
         {
-            key[i] = '\0';
-            break;
+          keyBuffer[i] = 0;
         }
     }
 
-    pr_info("[%s] | Key is a string: %s\n", DEVICE_NAME, key);
+    deserialize( keyBuffer, keyHex, (2 * KEY_LENGHT) );
+    printHex( keyHex, KEY_LENGHT, "Key Received" );
+
+    pr_info("[%s] | Buffer......: %s\n", DEVICE_NAME, keyBuffer);
+    // pr_info("[%s] | Key is a string: %s\n", DEVICE_NAME, key);
 
     if( init_fops() != 0 )
     {

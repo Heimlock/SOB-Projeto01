@@ -21,13 +21,13 @@ int   encrypt( u8 key[], char input[], char output[], size_t size )
     size_t ivsize = (size * (BLK_SIZE/sizeof(int)));
 
 
-    #ifdef DEBUG
-      pr_info("[%s] | ENCRYPT INFO\n", DEVICE_NAME);
-      // pr_info("[%s] | Key..: %s\n", DEVICE_NAME, key);
-      dump_hex( key, 32, "Key.." );
-      pr_info("[%s] | Input: %s\n", DEVICE_NAME, input);
-      pr_info("[%s] | Size.: %d\n", DEVICE_NAME, size);
-    #endif
+    // #ifdef DEBUG
+    //   pr_info("[%s] | ENCRYPT INFO\n", DEVICE_NAME);
+    //   // pr_info("[%s] | Key..: %s\n", DEVICE_NAME, key);
+    //   dump_hex( key, 32, "Key.." );
+    //   pr_info("[%s] | Input: %s\n", DEVICE_NAME, input);
+    //   pr_info("[%s] | Size.: %d\n", DEVICE_NAME, size);
+    // #endif
 
 
     my_iv = vmalloc(size_bytes);
@@ -44,9 +44,9 @@ int   encrypt( u8 key[], char input[], char output[], size_t size )
     {
        printk("[%s] | ENCRYPT -- Failed to Alloc tfm!\n", DEVICE_NAME);
        rtn  = -1;
-       goto tfm_free;
+       goto crypto_free;
     }
-    crypto_blkcipher_setkey( tfm, key, size_bytes);
+    crypto_blkcipher_setkey( tfm, key, KEY_LENGHT);
 
     #ifdef  DEBUG
       pr_info("[ENCRYPT] | TFM Allocated\n");
@@ -86,8 +86,6 @@ int   encrypt( u8 key[], char input[], char output[], size_t size )
     #endif
 
     crypto_free:
-      // vfree(tfm);
-    tfm_free:
       vfree(my_iv);
     my_iv_free:
     return rtn;
@@ -123,7 +121,7 @@ int   decrypt( u8 key[], char input[], char output[], size_t size )
        goto tfm_free;
     }
 
-    crypto_blkcipher_setkey( tfm, key, size_bytes);
+    crypto_blkcipher_setkey( tfm, key, KEY_LENGHT);
 
     #ifdef  DEBUG
       pr_info("[DECRYPT] | TFM Allocated\n");
@@ -166,17 +164,4 @@ int   decrypt( u8 key[], char input[], char output[], size_t size )
       vfree(my_iv);
     my_iv_free:
     return rtn;
-}
-
-
-void dump_hex( char input[], int size, char *info )
-{
-    int   i;
-    char  str[(80 * 2) + 1];
-
-    for (i = 0; i < size; i++)
-        sprintf(&str[i*2],"%02x", (unsigned char)input[i]);
-    str[i*2] = 0;
-
-    printk("[%s] | %s: '%s'\n", DEVICE_NAME, info, str);
 }
