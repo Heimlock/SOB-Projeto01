@@ -21,13 +21,14 @@ int   encrypt( u8 key[], char input[], char output[], size_t size )
     size_t ivsize = (size * (BLK_SIZE/sizeof(int)));
 
 
-    // #ifdef DEBUG
-    //   pr_info("[%s] | ENCRYPT INFO\n", DEVICE_NAME);
-    //   // pr_info("[%s] | Key..: %s\n", DEVICE_NAME, key);
-    //   dump_hex( key, 32, "Key.." );
-    //   pr_info("[%s] | Input: %s\n", DEVICE_NAME, input);
-    //   pr_info("[%s] | Size.: %d\n", DEVICE_NAME, size);
-    // #endif
+    #ifdef DEBUG
+      pr_info("[%s] | ENCRYPT INFO\n", DEVICE_NAME);
+      // pr_info("[%s] | Key..: %s\n", DEVICE_NAME, key);
+      printHex( key, KEY_LENGHT, "Key.." );
+      // pr_info("[%s] | Input: %s\n", DEVICE_NAME, input);
+      printHex( input, size, "Input" );
+      pr_info("[%s] | Size.: %d\n", DEVICE_NAME, size);
+    #endif
 
 
     my_iv = vmalloc(size_bytes);
@@ -83,6 +84,13 @@ int   encrypt( u8 key[], char input[], char output[], size_t size )
 
     #ifdef  DEBUG
       pr_info("[ENCRYPT] | TFM Free\n");
+    #endif
+
+    #ifdef DEBUG
+      pr_info("[%s] | ENCRYPT INFO\n", DEVICE_NAME);
+      printHex( key, KEY_LENGHT, "Key..." );
+      printHex( output, size, "Output" );
+      pr_info("[%s] | Size..: %d\n", DEVICE_NAME, size);
     #endif
 
     crypto_free:

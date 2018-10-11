@@ -12,21 +12,22 @@ MODULE_PARM_DESC(key, "Key String - 32bytes lenght");
 static int __init cryptomodule_init(void)
 {
     int   i = 0;
-    char  keyBuffer[2 * KEY_LENGHT];
+    char  *keyBuffer;
     pr_info("[%s] | Initializated\n", DEVICE_NAME);
 
-    //  Validar Entrada
-    for( i = 0; i < (2 * KEY_LENGHT); i++  )
-    {
-        if( key[i] != '\0' )
-          keyBuffer[i] = key[i];
-        else
-        {
-          keyBuffer[i] = 0;
-        }
-    }
+    // //  Validar Entrada
+    // for( i = 0; i < (2 * KEY_LENGHT); i++  )
+    // {
+    //     if( key[i] != '\0' )
+    //       keyBuffer[i] = key[i];
+    //     else
+    //     {
+    //       keyBuffer[i] = 0;
+    //     }
+    // }
 
-    deserialize( keyBuffer, keyHex, (2 * KEY_LENGHT) );
+    validate( key, &keyBuffer, (2 * KEY_LENGHT) );
+    deserialize( keyBuffer, keyHex, KEY_LENGHT );
     printHex( keyHex, KEY_LENGHT, "Key Received" );
 
     pr_info("[%s] | Buffer......: %s\n", DEVICE_NAME, keyBuffer);

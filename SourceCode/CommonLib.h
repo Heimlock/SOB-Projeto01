@@ -6,7 +6,7 @@
 #ifndef _COMMON_H
 #define _COMMON_H
 
-// #define DEBUG
+#define DEBUG
 
 #define DEVICE_NAME     "cryptomodule"
 #define KEY_LENGHT      16
@@ -43,7 +43,8 @@ static int  Device_Open = 0;        //  Will Become a Mutex
 // static char *key = "0000000000000000";
 // static unsigned char *key = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 // static unsigned char keyInput[(2 * KEY_LENGHT)];
-static char *key = "0000000000000000000000000000000000";
+// static char *key = "0000000000000000000000000000000000";
+static char *key;
 static unsigned char keyHex[KEY_LENGHT];
 static int  majorNumber;
 static char buffer[BUF_LEN];
@@ -75,6 +76,7 @@ void    serialize   ( char input[], char output[], int sizeIN );
 void    deserialize ( char input[], char output[], int sizeIN );
 int     arrangeText ( char input[], char **output, int size );
 void    printHex( char input[], int size, char *info );
+int     validate( char *source, char **destiny, int size);
 
 /*
  *  Structs
