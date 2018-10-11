@@ -6,30 +6,30 @@
 #ifndef _COMMON_H
 #define _COMMON_H
 
-#define DEBUG
+// #define DEBUG
 
 #define DEVICE_NAME     "cryptomodule"
 #define KEY_LENGHT      16
 #define BUF_LEN         80
 #define SHA256_LENGTH   32
 
-#include <linux/kernel.h>
-#include <linux/module.h>
-#include <linux/fs.h>
-#include <linux/init.h>
+#include <linux/cdev.h>
+#include <linux/crypto.h>
 #include <linux/delay.h>
 #include <linux/device.h>
-#include <linux/irq.h>
-#include <asm/uaccess.h>
-#include <asm/irq.h>
-#include <asm/io.h>
-#include <linux/poll.h>
-#include <linux/cdev.h>
-#include <linux/mutex.h>
-#include <linux/types.h>
 #include <linux/errno.h>
-#include <linux/crypto.h>
+#include <linux/fs.h>
+#include <linux/init.h>
+#include <asm/io.h>
+#include <asm/irq.h>
+#include <linux/irq.h>
+#include <linux/kernel.h>
+#include <linux/module.h>
+#include <linux/mutex.h>
+#include <linux/poll.h>
 #include <linux/scatterlist.h>
+#include <asm/uaccess.h>
+#include <linux/types.h>
 #include <linux/vmalloc.h>
 
 /*
@@ -40,8 +40,11 @@ static DEFINE_MUTEX( bufferLock );
 static int  Device_Open = 0;        //  Will Become a Mutex
 
 // static char key[KEY_LENGHT] = "0000000000000000";
-static char *key = "0000000000000000";
+// static char *key = "0000000000000000";
 // static unsigned char *key = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+// static unsigned char keyInput[(2 * KEY_LENGHT)];
+static char *key = "0000000000000000000000000000000000";
+static unsigned char keyHex[KEY_LENGHT];
 static int  majorNumber;
 static char buffer[BUF_LEN];
 static char bufferOUT[BUF_LEN];
@@ -67,7 +70,11 @@ void    show_hash_result( char * );
 
 int     encrypt( u8 key[], char input[], char output[], size_t size );
 int     decrypt( u8 key[], char input[], char output[], size_t size );
-void    dump_hex( char input[], int size, char *info );
+
+void    serialize   ( char input[], char output[], int sizeIN );
+void    deserialize ( char input[], char output[], int sizeIN );
+int     arrangeText ( char input[], char **output, int size );
+void    printHex( char input[], int size, char *info );
 
 /*
  *  Structs

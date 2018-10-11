@@ -15,7 +15,9 @@ int init_fops(void)
       return majorNumber;
    }
 
-   pr_info("[%s] | Registered correctly with major number %d\n", DEVICE_NAME , majorNumber);
+   #ifdef    DEBUG
+    pr_info("[%s] | Registered correctly with major number %d\n", DEVICE_NAME , majorNumber);
+   #endif
 
    cls = class_create(THIS_MODULE, DEVICE_NAME);
    if (IS_ERR(cls))
@@ -25,7 +27,9 @@ int init_fops(void)
       return PTR_ERR(cls);
    }
 
-   pr_info("[%s] | Device class registered correctly\n", DEVICE_NAME);
+   #ifdef    DEBUG
+    pr_info("[%s] | Device class registered correctly\n", DEVICE_NAME);
+   #endif
 
    device = device_create(cls, NULL, MKDEV(majorNumber, 0), NULL, DEVICE_NAME);
    if (IS_ERR(device))
@@ -36,7 +40,9 @@ int init_fops(void)
       return PTR_ERR(device);
    }
 
-   pr_info("[%s] | Device class created correctly\n", DEVICE_NAME);
+   #ifdef    DEBUG
+    pr_info("[%s] | Device class created correctly\n", DEVICE_NAME);
+   #endif
    return 0;
 }
 
@@ -125,9 +131,8 @@ ssize_t device_write( struct file *filp, const char *buffer_usr, size_t length, 
     int ret, i;
     int operation = -1;
     unsigned long  bytes2Write = 0;
-    char tempBuffer[BUF_LEN];
-
-unsigned char my_key[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f};
+    char  tempBuffer[BUF_LEN];
+    char  *cipherText;
 
     mutex_lock(&bufferLock);
 
@@ -164,23 +169,24 @@ unsigned char my_key[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 
 
     //  Go Through the TempBuffer copy it to the Actual Buffer
     //  [0] == Operation & [1] == ' '
-    // for( i = 0; i < (bytes2Write - 2); i++ )
-    for( i = 0; i < 32; i++ )
+    for( i = 0; i < (bytes2Write - 2); i++ )
     {
-      buffer[i]  = tempBuffer[i+2];
+        buffer[i]  = tempBuffer[i+2];
     }
     buffer_size    =   bytes2Write - 2;
     buffer[buffer_size+1] = '\0';
 
     // printk("[%s] | Buffer: %s\n[%s] | TempBuffer: %s\n", DEVICE_NAME, buffer, DEVICE_NAME, tempBuffer);
 
+//  TODO  --  Deserialize Input Text
+
     switch (operation)
     {
       case ENCRYPT:
       {
           // pr_err( "[%s] | Not Implemented yet\n", DEVICE_NAME);
-          // if( encrypt( key, buffer_Ptr, bufferOUT, buffer_size ) < 0 )
-          if( encrypt( my_key, buffer_Ptr, bufferOUT, 32 ) < 0 )
+          buffer_size  = arrangeText( buffer, &cipherText, buffer_size );
+          if( encrypt( keyHex, cipherText, bufferOUT, buffer_size ) < 0 )
           {
                 pr_err( "[%s] | ERROR! encrypt Function\n", DEVICE_NAME);
           }
@@ -189,8 +195,8 @@ unsigned char my_key[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 
       case DECRYPT:
       {
           // pr_err( "[%s] | Not Implemented yet\n", DEVICE_NAME);
-          // if( decrypt( key, buffer_Ptr, bufferOUT, buffer_size ) < 0 )
-          if( decrypt( my_key, buffer_Ptr, bufferOUT, buffer_size ) < 0 )
+          buffer_size  = arrangeText( buffer, &cipherText, buffer_size );
+          if( decrypt( keyHex, cipherText, bufferOUT, buffer_size ) < 0 )
           {
                 pr_err( "[%s] | ERROR! encrypt Function\n", DEVICE_NAME);
           }
@@ -209,7 +215,8 @@ unsigned char my_key[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 
     }
 
     pr_info( "[%s] | Buffer Stored: '%s'\n", DEVICE_NAME, buffer_Ptr );
-    dump_hex( bufferOUT, buffer_size, "BufferOUT Stored" );
+    // dump_hex( bufferOUT, buffer_size, "BufferOUT Stored" );
+    printHex( bufferOUT, buffer_size, "BufferOUT Stored" );
     pr_info( "[%s] | Bytes Available: '%d'\n", DEVICE_NAME, BUF_LEN - buffer_size );
 
     mutex_unlock(&bufferLock);
