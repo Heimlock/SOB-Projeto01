@@ -76,6 +76,10 @@ int     arrangeText( char input[], char **output, int size )
     for( i = 0; i < size; i++ )
       (*output)[i]  = input[i];
 
+    #ifdef    DEBUG
+      pr_info( "[%s] | ArrangeText: %s\n", DEVICE_NAME, (*output) );
+    #endif
+
     return  actualSize;
     output_free:
       return 0;
@@ -83,19 +87,66 @@ int     arrangeText( char input[], char **output, int size )
 
 void    printHex( char input[], int size, char *info )
 {
-    char  *buffer;
+    char  *bufferAux;
 
-    buffer  = vmalloc( (size * 2) );
-    if( !buffer )
+    bufferAux  = vmalloc( (size * 2) );
+    if( !bufferAux )
     {
-       pr_crit("[%s] | printHex -- Failed to Alloc buffer!\n", DEVICE_NAME);
-       goto buffer_free;
+       pr_crit("[%s] | printHex -- Failed to Alloc bufferAux!\n", DEVICE_NAME);
+       goto bufferAux_free;
     }
 
-    serialize( input, buffer, size );
-    pr_info( "[%s] | %s: %s\n", DEVICE_NAME, info, buffer );
+    serialize( input, bufferAux, size );
+    pr_info( "[%s] | %s: %s\n", DEVICE_NAME, info, bufferAux );
 
-    vfree(buffer);
-    buffer_free:
+    vfree(bufferAux);
+    bufferAux_free:
     return;
+}
+
+int     validate(char *source, char **destiny, int size)
+{
+    int count = 0;
+
+    if (size%2 != 0)
+      return -1;
+
+    //allocing destiny
+    (*destiny) = vmalloc(size);
+    if ((*destiny) == 0)
+    {
+        pr_info("ERROR VMALLOC");
+        return -1;
+    }
+
+    //passe source to destiny after destiny is alloced
+    while (source[count] != '\0' && count < size)
+    {
+        //checking if is letter or number
+        if ((source[count] > 64 && source[count] < 71)||(source[count] > 96 && source[count] < 103) || (source[count] > 47 && source[count] < 58))
+        {
+            if (source[count] > 96 && source[count] < 103)
+            {
+              (*destiny)[count] = source[count]-32;
+            }
+            else
+            {
+              (*destiny)[count] = source[count];
+            }
+            count++;
+        }
+        else
+        {
+            pr_err("Character Invalid");
+            return -1;
+        }
+    }
+
+    //pr_info("Count: %d\n", count);
+    while (count < size)
+    {
+        (*destiny)[count] = '0';
+        count++;
+    }
+    return 0;
 }

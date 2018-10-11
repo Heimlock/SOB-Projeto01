@@ -132,6 +132,7 @@ ssize_t device_write( struct file *filp, const char *buffer_usr, size_t length, 
     int operation = -1;
     unsigned long  bytes2Write = 0;
     char  tempBuffer[BUF_LEN];
+    char  deserializedBuffer[BUF_LEN*2];
     char  *cipherText;
 
     mutex_lock(&bufferLock);
@@ -179,13 +180,15 @@ ssize_t device_write( struct file *filp, const char *buffer_usr, size_t length, 
     // printk("[%s] | Buffer: %s\n[%s] | TempBuffer: %s\n", DEVICE_NAME, buffer, DEVICE_NAME, tempBuffer);
 
 //  TODO  --  Deserialize Input Text
-
+    deserialize( buffer, deserializedBuffer, (2*BUF_LEN) );
     switch (operation)
     {
       case ENCRYPT:
       {
           // pr_err( "[%s] | Not Implemented yet\n", DEVICE_NAME);
-          buffer_size  = arrangeText( buffer, &cipherText, buffer_size );
+        //   buffer_size  = arrangeText( buffer, &cipherText, buffer_size );
+          printHex( keyHex, KEY_LENGHT, "Key.." );
+          buffer_size  = arrangeText( deserializedBuffer, &cipherText, buffer_size );
           if( encrypt( keyHex, cipherText, bufferOUT, buffer_size ) < 0 )
           {
                 pr_err( "[%s] | ERROR! encrypt Function\n", DEVICE_NAME);
