@@ -18,8 +18,9 @@ sudo insmod ./cryptomodule.ko key="000102030405060708090A0B0C0D0E0F"
 # sudo ./test_cryptomodule "h Felipe Moreira Ferreira"
 # sudo ./test_cryptomodule "h 012345678901234567890123456789"
 # sudo ./test_cryptomodule "h Felipe Moreira Ferreira"
-sudo ./test_cryptomodule "c Felipe Ferreira"
-sudo ./test_cryptomodule "c Felipe Moreira Ferreira0"
+# sudo ./test_cryptomodule "c Felipe Ferreira"
+sudo ./test_cryptomodule "c 000102030405060708090A0B0C0D0E0F"
+# sudo ./test_cryptomodule "c Felipe Moreira Ferreira0"
 
 sudo rmmod cryptomodule
 
