@@ -5,8 +5,6 @@ MODULE_AUTHOR("Felipe Ferreira");
 MODULE_DESCRIPTION("Cipher Operations");
 MODULE_LICENSE("GPL");
 
-#define BLK_SIZE  04 * sizeof(int)
-
 int   encrypt( u8 key[], char input[], char output[], size_t size )
 {
     int     rtn   = 0;
@@ -15,19 +13,17 @@ int   encrypt( u8 key[], char input[], char output[], size_t size )
     struct  scatterlist       input_sg;
     struct  scatterlist       output_sg;
 
-    size_t  size_bytes  = (size * (BLK_SIZE/sizeof(int)));
+    size_t  size_bytes  = (size * sizeof(int));
     unsigned char *my_iv  = NULL;
-    void *iv  = NULL;
-    size_t ivsize = (size * (BLK_SIZE/sizeof(int)));
-
+    void    *iv  = NULL;
+    size_t  ivsize = (size * sizeof(int));
 
     #ifdef DEBUG
       pr_info("[%s] | ENCRYPT INFO\n", DEVICE_NAME);
-      // pr_info("[%s] | Key..: %s\n", DEVICE_NAME, key);
-      printHex( key, KEY_LENGHT, "Key.." );
-      // pr_info("[%s] | Input: %s\n", DEVICE_NAME, input);
-      printHex( input, size, "Input" );
-      pr_info("[%s] | Size.: %d\n", DEVICE_NAME, size);
+      printHex( key, KEY_LENGHT, "Key..." );
+      printHex( input, size, "Input." );
+      printHex( output, size, "Output" );
+      pr_info("[%s] | Size..: %d\n", DEVICE_NAME, (int)size);
     #endif
 
 
@@ -89,8 +85,9 @@ int   encrypt( u8 key[], char input[], char output[], size_t size )
     #ifdef DEBUG
       pr_info("[%s] | ENCRYPT INFO\n", DEVICE_NAME);
       printHex( key, KEY_LENGHT, "Key..." );
+      printHex( input, size, "Input." );
       printHex( output, size, "Output" );
-      pr_info("[%s] | Size..: %d\n", DEVICE_NAME, size);
+      pr_info("[%s] | Size..: %d\n", DEVICE_NAME, (int)size);
     #endif
 
     crypto_free:
@@ -107,10 +104,10 @@ int   decrypt( u8 key[], char input[], char output[], size_t size )
     struct  scatterlist       input_sg;
     struct  scatterlist       output_sg;
 
-    size_t  size_bytes  = (size * (BLK_SIZE/sizeof(int)));
+    size_t  size_bytes  = (size * sizeof(int));
     unsigned char *my_iv;
     void *iv;
-    size_t ivsize = (size * (BLK_SIZE/sizeof(int)));
+    size_t ivsize = (size * sizeof(int));
 
     my_iv = vmalloc(size_bytes);
     if (!my_iv)
@@ -126,7 +123,7 @@ int   decrypt( u8 key[], char input[], char output[], size_t size )
     {
        printk("[%s] | DECRYPT -- Failed to Alloc tfm!\n", DEVICE_NAME);
        rtn  = -1;
-       goto tfm_free;
+       goto crypto_free;
     }
 
     crypto_blkcipher_setkey( tfm, key, KEY_LENGHT);
@@ -167,8 +164,6 @@ int   decrypt( u8 key[], char input[], char output[], size_t size )
     #endif
 
     crypto_free:
-      vfree(tfm);
-    tfm_free:
       vfree(my_iv);
     my_iv_free:
     return rtn;

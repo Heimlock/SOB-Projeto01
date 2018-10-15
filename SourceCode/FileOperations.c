@@ -99,9 +99,9 @@ ssize_t device_read( struct file *filp, char *buffer_usr, size_t length, loff_t 
     //  Verify if has anything on the Buffer
     if( buffer_size != 0 )
     {
-        if( length > BUF_LEN )
+        if( length > (2*BUF_LEN) )
         {
-            bytesRead   =   BUF_LEN;
+            bytesRead   =   (2*BUF_LEN);
         }
         else
         {
@@ -128,32 +128,35 @@ ssize_t device_read( struct file *filp, char *buffer_usr, size_t length, loff_t 
  */
 ssize_t device_write( struct file *filp, const char *buffer_usr, size_t length, loff_t *offset )
 {
-    int ret, i;
-    int operation = -1;
+    int ret, i, operation = -1;
     unsigned long  bytes2Write = 0;
-    char  tempBuffer[BUF_LEN];
-    char  deserializedBuffer[BUF_LEN*2];
+    char  tempBuffer[(2*BUF_LEN)], *verifiedInput;
+    // char  deserializedBuffer[BUF_LEN];
     char  *cipherText;
 
     mutex_lock(&bufferLock);
 
+    //  Presets
     buffer_size    =   0;
+    memset( tempBuffer, 0, 2*BUF_LEN );
+    // memset( deserializedBuffer, 0, BUF_LEN );
 
-    if( length > BUF_LEN )
+    if( length > (2*BUF_LEN) )
     {
-        bytes2Write   =   BUF_LEN;
+        bytes2Write   =   (2*BUF_LEN);
     }
     else
     {
         bytes2Write   =   length;
     }
+    //                    to          from        length
     ret = copy_from_user( tempBuffer, buffer_usr, bytes2Write );
     if( ret != 0 )
     {
         pr_warning("[%s] | %d bytes Wont be Written. Bytes Written = %lu\n", DEVICE_NAME, ret, bytes2Write);
     }
 
-
+    tempBuffer[bytes2Write] = '\0';
     pr_info( "[%s] | Data Received: '%s'\n", DEVICE_NAME, tempBuffer );
 
     //  First Char has to be 'c' or 'd' or 'h'
@@ -163,7 +166,6 @@ ssize_t device_write( struct file *filp, const char *buffer_usr, size_t length, 
         return -EINVAL;
     }
 
-    //  ENCRYPT
     if( tempBuffer[0] == 'c' )        operation = ENCRYPT;
     else if ( tempBuffer[0] == 'd' )  operation = DECRYPT;
     else if ( tempBuffer[0] == 'h' )  operation = SUMHASH;
@@ -175,53 +177,90 @@ ssize_t device_write( struct file *filp, const char *buffer_usr, size_t length, 
         buffer[i]  = tempBuffer[i+2];
     }
     buffer_size    =   bytes2Write - 2;
-    buffer[buffer_size+1] = '\0';
 
-    // printk("[%s] | Buffer: %s\n[%s] | TempBuffer: %s\n", DEVICE_NAME, buffer, DEVICE_NAME, tempBuffer);
+    //  Verify if Input is Valid
+    if( validate( buffer, &verifiedInput, buffer_size ) != 0 )
+    {
+          pr_err( "[%s] | ERROR! validate Function\n", DEVICE_NAME);
+          goto  validate_error;
+    }
 
-//  TODO  --  Deserialize Input Text
-    deserialize( buffer, deserializedBuffer, (2*BUF_LEN) );
+    //  Deserialize Input
+    memset( buffer,     0,   BUF_LEN );
+    memset( tempBuffer, 0, 2*BUF_LEN );
+    memset( bufferOUT,  0,   BUF_LEN );
+    deserialize( verifiedInput, buffer, buffer_size );
+    // memset( &buffer[(buffer_size/2)], 0, (BUF_LEN - buffer_size) );
+    buffer_size = (buffer_size/2);
+    // pr_info( "[%s] | DeserializedBuffer: '%s'\n", DEVICE_NAME, buffer );
+    pr_info( "[%s] | Buffer Size.....: %d\n", DEVICE_NAME, buffer_size );
+    printHex(  buffer, buffer_size, "DeserializedBuffer" );
     switch (operation)
     {
       case ENCRYPT:
       {
-          // pr_err( "[%s] | Not Implemented yet\n", DEVICE_NAME);
-        //   buffer_size  = arrangeText( buffer, &cipherText, buffer_size );
-          printHex( keyHex, KEY_LENGHT, "Key.." );
-          buffer_size  = arrangeText( deserializedBuffer, &cipherText, buffer_size );
-          if( encrypt( keyHex, cipherText, bufferOUT, buffer_size ) < 0 )
+          buffer_size  = arrangeText( buffer, &cipherText, buffer_size );
+          // memset( tempBuffer, 0, 2*BUF_LEN );
+          if( encrypt( keyHex, cipherText, tempBuffer, buffer_size ) < 0 )
           {
                 pr_err( "[%s] | ERROR! encrypt Function\n", DEVICE_NAME);
           }
+          // serialize( tempBuffer, bufferOUT, buffer_size );
+          // buffer_size = (2 * buffer_size);
+
+          printHex(  tempBuffer, buffer_size, "TempBufferResult" );
+          serialize( tempBuffer, bufferOUT, buffer_size );
+          buffer_size = (2 * buffer_size);
           break;
       }
       case DECRYPT:
       {
-          // pr_err( "[%s] | Not Implemented yet\n", DEVICE_NAME);
+          // buffer_size  = arrangeText( buffer, &cipherText, buffer_size );
+          // if( decrypt( keyHex, cipherText, bufferOUT, buffer_size ) < 0 )
+          // {
+          //       pr_err( "[%s] | ERROR! encrypt Function\n", DEVICE_NAME);
+          // }
           buffer_size  = arrangeText( buffer, &cipherText, buffer_size );
-          if( decrypt( keyHex, cipherText, bufferOUT, buffer_size ) < 0 )
+          // memset( tempBuffer, 0, 2*BUF_LEN );
+          // if( decrypt( keyHex, buffer, tempBuffer, buffer_size ) < 0 )
+          if( decrypt( keyHex, cipherText, tempBuffer, buffer_size ) < 0 )
           {
                 pr_err( "[%s] | ERROR! encrypt Function\n", DEVICE_NAME);
           }
+          // memset( &buffer[(buffer_size/2)], 0, (BUF_LEN - buffer_size) );
+          // serialize( tempBuffer, bufferOUT, buffer_size );
+          // buffer_size = (2 * buffer_size);
+
+          printHex(  tempBuffer, buffer_size, "TempBufferResult" );
+          serialize( tempBuffer, bufferOUT, buffer_size );
+          buffer_size = (2 * buffer_size);
           break;
       }
       case SUMHASH:
       {
-          if( sumHash( buffer_Ptr, bufferOUT ) == -1 )
+          buffer_size  = arrangeText( buffer, &cipherText, buffer_size );
+          // if( sumHash( buffer_Ptr, bufferOUT ) == -1 )
+          // if( sumHash( buffer, bufferOUT ) == -1 )
+          if( sumHash( cipherText, bufferOUT ) == -1 )
           {
                 pr_err( "[%s] | ERROR! sumHash Function\n", DEVICE_NAME);
           }
           buffer_size = SHA256_LENGTH;
-          // show_hash_result( buffer_Ptr );
           break;
       }
     }
+    pr_info( "[%s] | Buffer Size.....: %d\n", DEVICE_NAME, buffer_size );
 
-    pr_info( "[%s] | Buffer Stored: '%s'\n", DEVICE_NAME, buffer_Ptr );
-    // dump_hex( bufferOUT, buffer_size, "BufferOUT Stored" );
+    // for( i = 0; i < KEY_LENGHT; i++ )
+    //   pr_info("[%s] | keyHex[%2d] == 0x%02hhX\n", DEVICE_NAME, i, keyHex[i] );
+    printHex( keyHex,    KEY_LENGHT,  "KeyHex.........." );
     printHex( bufferOUT, buffer_size, "BufferOUT Stored" );
-    pr_info( "[%s] | Bytes Available: '%d'\n", DEVICE_NAME, BUF_LEN - buffer_size );
+    printHex( buffer,    buffer_size, "Buffer Stored..." );
+    // pr_info( "[%s] | Buffer Stored...: '%s'\n", DEVICE_NAME, buffer );
+    pr_info( "[%s] | Bytes Available.: %d / %d\n", DEVICE_NAME, (BUF_LEN - buffer_size), BUF_LEN );
+    pr_info( "[%s] | Bytes Received..: %d\n", DEVICE_NAME, (int)length );
 
+    validate_error:
     mutex_unlock(&bufferLock);
     return bytes2Write;
 }
