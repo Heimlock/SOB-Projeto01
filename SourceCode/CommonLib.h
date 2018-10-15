@@ -6,11 +6,11 @@
 #ifndef _COMMON_H
 #define _COMMON_H
 
-#define DEBUG
+// #define DEBUG
 
 #define DEVICE_NAME     "cryptomodule"
 #define KEY_LENGHT      16
-#define BUF_LEN         80
+#define BUF_LEN         320 //80
 #define SHA256_LENGTH   32
 
 #include <linux/cdev.h>
@@ -35,23 +35,40 @@
 /*
  * Global Variables
  */
+ static DEFINE_MUTEX( bufferLock );
+#ifdef    __MASTER
+  int  Device_Open = 0;
+  int  majorNumber;
 
-static DEFINE_MUTEX( bufferLock );
-static int  Device_Open = 0;        //  Will Become a Mutex
+  char *key;
+  unsigned char keyHex[KEY_LENGHT];
 
-// static char key[KEY_LENGHT] = "0000000000000000";
-// static char *key = "0000000000000000";
-// static unsigned char *key = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-// static unsigned char keyInput[(2 * KEY_LENGHT)];
-// static char *key = "0000000000000000000000000000000000";
-static char *key;
-static unsigned char keyHex[KEY_LENGHT];
-static int  majorNumber;
-static char buffer[BUF_LEN];
-static char bufferOUT[BUF_LEN];
-static int  buffer_size = 0;
-static char *buffer_Ptr;
+  char buffer[BUF_LEN];
+  char bufferOUT[(2*BUF_LEN)];
+  int  buffer_size = 0;
+  char *buffer_Ptr;
 
+  EXPORT_SYMBOL(Device_Open);
+  EXPORT_SYMBOL(majorNumber);
+  EXPORT_SYMBOL(key);
+  EXPORT_SYMBOL(keyHex);
+  EXPORT_SYMBOL(buffer);
+  EXPORT_SYMBOL(bufferOUT);
+  EXPORT_SYMBOL(buffer_size);
+  EXPORT_SYMBOL(buffer_Ptr);
+#endif
+
+#ifndef   __MASTER
+  extern int  Device_Open;
+  extern int  majorNumber;
+
+  extern char *key;
+  extern unsigned char keyHex[KEY_LENGHT];
+  extern char buffer[BUF_LEN];
+  extern char bufferOUT[BUF_LEN];
+  extern int  buffer_size;
+  extern char *buffer_Ptr;
+#endif
 
 /*
  *  Functions
@@ -63,20 +80,20 @@ int     init_fops( void );
 void    cleanup_fops( void );
 int     device_open( struct inode *, struct file * );
 int     device_release( struct inode *, struct file * );
-ssize_t device_read( struct file *, char *, size_t , loff_t * );
+ssize_t device_read(  struct file *,       char *, size_t , loff_t * );
 ssize_t device_write( struct file *, const char *, size_t , loff_t * );
 
 int     sumHash( char *, char * );
-void    show_hash_result( char * );
+// void    show_hash_result( char * );
 
-int     encrypt( u8 key[], char input[], char output[], size_t size );
-int     decrypt( u8 key[], char input[], char output[], size_t size );
+int     encrypt( u8 *, char *, char *, size_t );
+int     decrypt( u8 *, char *, char *, size_t );
 
-void    serialize   ( char input[], char output[], int sizeIN );
-void    deserialize ( char input[], char output[], int sizeIN );
-int     arrangeText ( char input[], char **output, int size );
-void    printHex( char input[], int size, char *info );
-int     validate( char *source, char **destiny, int size);
+void    serialize   ( char *, char  *,  int    );
+void    deserialize ( char *, char  *,  int    );
+int     arrangeText ( char *, char **,  int    );
+void    printHex    ( char *, int    ,  char * );
+int     validate    ( char *, char **,  int    );
 
 /*
  *  Structs

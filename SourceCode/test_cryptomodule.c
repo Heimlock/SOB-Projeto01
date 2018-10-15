@@ -15,13 +15,14 @@ typedef	enum STATES	{
 
 static char receive[BUFFER_LENGTH];
 
-void show_hash_result(char * hash_sha256);
-void dump_hex( char input[], int size );
+void  show_hash_result(char * hash_sha256);
 
-int main( int argc, char *argv[] )
+int   main( int argc, char *argv[] )
 {
+    int i;
     int fd, operation = -1, bytesRead = 0;
-    char *stringToSend ;
+    char  command[80];
+    char *stringToSend;
 
     if( argc < 2 )
     {
@@ -74,8 +75,23 @@ int main( int argc, char *argv[] )
      case ENCRYPT:
      {
        printf("[TestProgram] | The received message is: '%s'\n", receive);
-       dump_hex( receive, bytesRead );
-       // printf( "[TestProgram] | Not Implemented yet\n");
+       // sprintf( command, "d %s", receive );
+       // // Send the string to the Module
+       // if ( write(fd, command, strlen(command)) < 0 )
+       // {
+       //     perror("[TestProgram] | Failed to write the message to the device.");
+       //     return errno;
+       // }
+       // for( i = 0; i < BUFFER_LENGTH; i++ )
+       //    receive[i] = 0;
+       // // Read the response from the Module
+       // bytesRead = read(fd, receive, BUFFER_LENGTH);
+       // if ( bytesRead < 0 )
+       // {
+       //    perror("[TestProgram] | Failed to read the message from the device.");
+       //    return errno;
+       // }
+       // printf("[TestProgram] | The received message is: '%s'\n", receive);
        break;
      }
      case DECRYPT:
@@ -104,16 +120,4 @@ void show_hash_result(char * hash_sha256)
         sprintf(&str[i*2],"%02x", (unsigned char)hash_sha256[i]);
     str[i*2] = 0;
     printf("[TestProgram] | Sum Hash is: '%s'\n", str);;
-}
-
-void dump_hex( char input[], int size )
-{
-    int   i;
-    char  str[(BUFFER_LENGTH * 2) + 1];
-
-    for (i = 0; i < size; i++)
-        sprintf(&str[i*2],"%02x", (unsigned char)input[i]);
-    str[i*2] = 0;
-
-    printf("[TestProgram] | Encrypt Text: '%s'\n", str);;
 }

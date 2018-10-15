@@ -5,6 +5,9 @@ MODULE_AUTHOR("Felipe Ferreira");
 MODULE_DESCRIPTION("Auxiliary Functions");
 MODULE_LICENSE("GPL");
 
+/*
+ *    [FF]  =>  "FF"
+ */
 void    serialize( char input[], char output[], int sizeIN )
 {
     int i;
@@ -16,6 +19,9 @@ void    serialize( char input[], char output[], int sizeIN )
     }
 }
 
+/*
+ *    "FF" => 255
+ */
 int     hex2int( char str[] )
 {
     int   i;
@@ -34,13 +40,16 @@ int     hex2int( char str[] )
 
     rtn   = (values[1] + (16 * values[0]));
 
-    #ifdef    DEBUG
-      printk("Str[%d , %d]: %c%c | 0x%02hhX\n", 0, 1, str[0], str[1], rtn);
-    #endif
+    // #ifdef    DEBUG
+    //   printk("Str[%d , %d]: %c%c | 0x%02hhX\n", 0, 1, str[0], str[1], rtn);
+    // #endif
     return  rtn;
 }
 
-void    deserialize(char input[], char output[], int sizeIN)
+/*
+ *    "FF"  =>  [FF]
+ */
+void    deserialize( char input[], char output[], int sizeIN )
 {
     int     i, k;
     char    aux;
@@ -50,6 +59,10 @@ void    deserialize(char input[], char output[], int sizeIN)
     {
         sprintf(&aux, "%c", hex2int( &input[i]) );
         output[k] = aux;
+
+        #ifdef    DEBUG
+          pr_info("[%s] | Deserialize -- Output[%2d] == 0x%02hhX\n", DEVICE_NAME, k, output[k] );
+        #endif
     }
 }
 
@@ -89,7 +102,7 @@ void    printHex( char input[], int size, char *info )
 {
     char  *bufferAux;
 
-    bufferAux  = vmalloc( (size * 2) );
+    bufferAux  = vmalloc( (size * 2) + 1 );
     if( !bufferAux )
     {
        pr_crit("[%s] | printHex -- Failed to Alloc bufferAux!\n", DEVICE_NAME);
@@ -97,6 +110,7 @@ void    printHex( char input[], int size, char *info )
     }
 
     serialize( input, bufferAux, size );
+    bufferAux[(2 * size)] = '\0';
     pr_info( "[%s] | %s: %s\n", DEVICE_NAME, info, bufferAux );
 
     vfree(bufferAux);
@@ -104,45 +118,48 @@ void    printHex( char input[], int size, char *info )
     return;
 }
 
-int     validate(char *source, char **destiny, int size)
+/*
+ *    Verify if Input Has only valid Characters, And Allocate Output with the Valid Correspondent;
+ *    If Input is Smaller than Expected size, fill the remaining with zeros;
+ *    If Input is Bigger than Expected size, Copy only the 'size' first values;
+ */
+int     validate( char *source, char **destiny, int size )
 {
     int count = 0;
 
-    if (size%2 != 0)
-      return -1;
-
-    //allocing destiny
-    (*destiny) = vmalloc(size);
-    if ((*destiny) == 0)
+    if ( (size % 2) != 0 )
     {
-        pr_info("ERROR VMALLOC");
+        pr_err("[%s] | validate -- source hasn't even lenght!\n", DEVICE_NAME);
         return -1;
     }
 
-    //passe source to destiny after destiny is alloced
+    //  Allocing Destiny
+    (*destiny) = vmalloc(size);
+    if ((*destiny) == 0)
+    {
+        pr_crit("[%s] | validate -- Failed to Alloc destiny!\n", DEVICE_NAME);
+        return -1;
+    }
+
+    //  Passe Source to Destiny after Destiny is Alloced
     while (source[count] != '\0' && count < size)
     {
-        //checking if is letter or number
-        if ((source[count] > 64 && source[count] < 71)||(source[count] > 96 && source[count] < 103) || (source[count] > 47 && source[count] < 58))
+        //  Checking if is Letter or Number
+        if ((source[count] > 64 && source[count] < 71) || (source[count] > 96 && source[count] < 103) || (source[count] > 47 && source[count] < 58))
         {
             if (source[count] > 96 && source[count] < 103)
-            {
-              (*destiny)[count] = source[count]-32;
-            }
+                (*destiny)[count] = ( source[count] - 32 );
             else
-            {
-              (*destiny)[count] = source[count];
-            }
+                (*destiny)[count] = source[count];
             count++;
         }
         else
         {
-            pr_err("Character Invalid");
+            pr_crit("[%s] | validate -- Not a valid Character!\n", DEVICE_NAME);
             return -1;
         }
     }
 
-    //pr_info("Count: %d\n", count);
     while (count < size)
     {
         (*destiny)[count] = '0';

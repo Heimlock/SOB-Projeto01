@@ -1,4 +1,5 @@
 
+#define  __MASTER
 #include "CommonLib.h"
 
 MODULE_LICENSE("GPL");
@@ -11,27 +12,22 @@ MODULE_PARM_DESC(key, "Key String - 32bytes lenght");
 
 static int __init cryptomodule_init(void)
 {
-    int   i = 0;
-    char  *keyBuffer;
+    int   i;
+    char  *keyBuffer =  NULL;
+    char  *failSafe  = "000102030405060708090A0B0C0D0E0F";
     pr_info("[%s] | Initializated\n", DEVICE_NAME);
 
-    // //  Validar Entrada
-    // for( i = 0; i < (2 * KEY_LENGHT); i++  )
-    // {
-    //     if( key[i] != '\0' )
-    //       keyBuffer[i] = key[i];
-    //     else
-    //     {
-    //       keyBuffer[i] = 0;
-    //     }
-    // }
+    //  Verify if Key is Valid
+    // validate( key, &keyBuffer, (2 * KEY_LENGHT) );
+    if( validate( key, &keyBuffer, (2 * KEY_LENGHT) ) != 0 )
+    {
+          pr_err( "[%s] | ERROR! validate Function\n", DEVICE_NAME);
+          keyBuffer = failSafe;
+    }
 
-    validate( key, &keyBuffer, (2 * KEY_LENGHT) );
-    deserialize( keyBuffer, keyHex, KEY_LENGHT );
+    deserialize( keyBuffer, keyHex, (2 * KEY_LENGHT) );
     printHex( keyHex, KEY_LENGHT, "Key Received" );
-
-    pr_info("[%s] | Buffer......: %s\n", DEVICE_NAME, keyBuffer);
-    // pr_info("[%s] | Key is a string: %s\n", DEVICE_NAME, key);
+    // pr_info("[%s] | KeyBuffer...: %s\n", DEVICE_NAME, keyBuffer);
 
     if( init_fops() != 0 )
     {
