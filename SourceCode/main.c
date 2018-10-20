@@ -1,4 +1,18 @@
 
+/*
+ *		Sistemas Operacionais B
+ *		Projeto 01 - Módulo Criptográfico
+ *
+ *	Integrantes:
+ *		Bruno Pereira Bannwart 				RA: 15171572
+ *		Felipe Moreira Ferreira 		 	RA: 16116469
+ *		Luiz Felipe Zerbetto Masson 	RA: 15166804
+ *		Matheus Manganeli de Macedo 	RA: 16250276
+ *		Rodrigo da Silva Cardoso 			RA: 16430126
+ *
+ *	 Main
+ */
+
 #define  __MASTER
 #include "CommonLib.h"
 
@@ -14,20 +28,22 @@ static int __init cryptomodule_init(void)
 {
     int   i;
     char  *keyBuffer =  NULL;
-    char  *failSafe  = "000102030405060708090A0B0C0D0E0F";
+
+    printk("============================================================\n");
     pr_info("[%s] | Initializated\n", DEVICE_NAME);
 
     //  Verify if Key is Valid
-    // validate( key, &keyBuffer, (2 * KEY_LENGHT) );
     if( validate( key, &keyBuffer, (2 * KEY_LENGHT) ) != 0 )
     {
-          pr_err( "[%s] | ERROR! validate Function\n", DEVICE_NAME);
-          keyBuffer = failSafe;
+        pr_err( "[%s] | ERROR! validate Function\n", DEVICE_NAME);
+        memset( keyHex, 0, KEY_LENGHT );
     }
-
-    deserialize( keyBuffer, keyHex, (2 * KEY_LENGHT) );
-    printHex( keyHex, KEY_LENGHT, "Key Received" );
-    // pr_info("[%s] | KeyBuffer...: %s\n", DEVICE_NAME, keyBuffer);
+    else
+    {
+        deserialize( keyBuffer, keyHex, (2 * KEY_LENGHT) );
+        vfree( keyBuffer );
+    }
+    printHex( keyHex, KEY_LENGHT, "Key Received......" );
 
     if( init_fops() != 0 )
     {
@@ -41,6 +57,7 @@ static void __exit cryptomodule_exit(void)
     cleanup_fops();
 
     pr_info("[%s] | Terminated\n", DEVICE_NAME);
+    printk("============================================================\n");
 }
 
 module_init(cryptomodule_init);

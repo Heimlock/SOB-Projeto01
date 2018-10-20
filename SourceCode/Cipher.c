@@ -1,4 +1,18 @@
 
+/*
+ *		Sistemas Operacionais B
+ *		Projeto 01 - Módulo Criptográfico
+ *
+ *	Integrantes:
+ *		Bruno Pereira Bannwart 				RA: 15171572
+ *		Felipe Moreira Ferreira 		 	RA: 16116469
+ *		Luiz Felipe Zerbetto Masson 	RA: 15166804
+ *		Matheus Manganeli de Macedo 	RA: 16250276
+ *		Rodrigo da Silva Cardoso 			RA: 16430126
+ *
+ *	 Operações de Cifragem e Decifragem
+ */
+
 #include "CommonLib.h"
 
 MODULE_AUTHOR("Felipe Ferreira");
@@ -19,7 +33,7 @@ int   encrypt( u8 key[], char input[], char output[], size_t size )
     size_t  ivsize = (size * sizeof(int));
 
     #ifdef DEBUG
-      pr_info("[%s] | ENCRYPT INFO\n", DEVICE_NAME);
+      pr_info("[%s] | ENCRYPT INFO -- Started\n", DEVICE_NAME);
       printHex( key, KEY_LENGHT, "Key..." );
       printHex( input, size, "Input." );
       printHex( output, size, "Output" );
@@ -83,7 +97,7 @@ int   encrypt( u8 key[], char input[], char output[], size_t size )
     #endif
 
     #ifdef DEBUG
-      pr_info("[%s] | ENCRYPT INFO\n", DEVICE_NAME);
+      pr_info("[%s] | ENCRYPT INFO -- Terminated\n", DEVICE_NAME);
       printHex( key, KEY_LENGHT, "Key..." );
       printHex( input, size, "Input." );
       printHex( output, size, "Output" );
@@ -108,6 +122,14 @@ int   decrypt( u8 key[], char input[], char output[], size_t size )
     unsigned char *my_iv;
     void *iv;
     size_t ivsize = (size * sizeof(int));
+
+    #ifdef DEBUG
+      pr_info("[%s] | ENCRYPT INFO -- Started\n", DEVICE_NAME);
+      printHex( key, KEY_LENGHT, "Key..." );
+      printHex( input, size, "Input." );
+      printHex( output, size, "Output" );
+      pr_info("[%s] | Size..: %d\n", DEVICE_NAME, (int)size);
+    #endif
 
     my_iv = vmalloc(size_bytes);
     if (!my_iv)
@@ -161,6 +183,15 @@ int   decrypt( u8 key[], char input[], char output[], size_t size )
 
     #ifdef  DEBUG
       pr_info("[DECRYPT] | TFM Free\n");
+    #endif
+
+
+    #ifdef DEBUG
+      pr_info("[%s] | DECRYPT INFO -- Terminated\n", DEVICE_NAME);
+      printHex( key, KEY_LENGHT, "Key..." );
+      printHex( input, size, "Input." );
+      printHex( output, size, "Output" );
+      pr_info("[%s] | Size..: %d\n", DEVICE_NAME, (int)size);
     #endif
 
     crypto_free:
