@@ -1,4 +1,18 @@
 
+/*
+ *		Sistemas Operacionais B
+ *		Projeto 01 - Módulo Criptográfico
+ *
+ *	Integrantes:
+ *		Bruno Pereira Bannwart 				RA: 15171572
+ *		Felipe Moreira Ferreira 		 	RA: 16116469
+ *		Luiz Felipe Zerbetto Masson 	RA: 15166804
+ *		Matheus Manganeli de Macedo 	RA: 16250276
+ *		Rodrigo da Silva Cardoso 			RA: 16430126
+ *
+ *	 Biblioteca de Recursos Comuns
+ */
+
 #pragma GCC diagnostic ignored "-Wunused-variable"
 #pragma GCC diagnostic ignored "-Wunused-function"
 
@@ -10,7 +24,7 @@
 
 #define DEVICE_NAME     "cryptomodule"
 #define KEY_LENGHT      16
-#define BUF_LEN         320 //80
+#define BUF_LEN         20 * KEY_LENGHT
 #define SHA256_LENGTH   32
 
 #include <linux/cdev.h>
@@ -19,6 +33,7 @@
 #include <linux/device.h>
 #include <linux/errno.h>
 #include <linux/fs.h>
+#include <crypto/internal/hash.h>
 #include <linux/init.h>
 #include <asm/io.h>
 #include <asm/irq.h>
@@ -43,6 +58,7 @@
   char *key;
   unsigned char keyHex[KEY_LENGHT];
 
+  char bufferIN[(2*BUF_LEN)];
   char buffer[BUF_LEN];
   char bufferOUT[(2*BUF_LEN)];
   int  buffer_size = 0;
@@ -64,6 +80,7 @@
 
   extern char *key;
   extern unsigned char keyHex[KEY_LENGHT];
+  extern char bufferIN[(2*BUF_LEN)];
   extern char buffer[BUF_LEN];
   extern char bufferOUT[BUF_LEN];
   extern int  buffer_size;
@@ -76,18 +93,18 @@
 static int  __init cryptomodule_init( void );
 static void __exit cryptomodule_exit( void );
 
-int     init_fops( void );
-void    cleanup_fops( void );
-int     device_open( struct inode *, struct file * );
+int     init_fops     ( void );
+void    cleanup_fops  ( void );
+int     device_open   ( struct inode *, struct file * );
 int     device_release( struct inode *, struct file * );
-ssize_t device_read(  struct file *,       char *, size_t , loff_t * );
-ssize_t device_write( struct file *, const char *, size_t , loff_t * );
+ssize_t device_read   ( struct file *,  char *, size_t , loff_t * );
+ssize_t device_write  ( struct file *,  const char *, size_t , loff_t * );
 
-int     sumHash( char *, char * );
-// void    show_hash_result( char * );
+int     sumHash     ( char *, char * );
+int     arrangeHash ( char *, char **, int );
 
-int     encrypt( u8 *, char *, char *, size_t );
-int     decrypt( u8 *, char *, char *, size_t );
+int     encrypt     ( u8 *, char *, char *, size_t );
+int     decrypt     ( u8 *, char *, char *, size_t );
 
 void    serialize   ( char *, char  *,  int    );
 void    deserialize ( char *, char  *,  int    );

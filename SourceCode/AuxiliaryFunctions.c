@@ -1,4 +1,18 @@
 
+/*
+ *		Sistemas Operacionais B
+ *		Projeto 01 - Módulo Criptográfico
+ *
+ *	Integrantes:
+ *		Bruno Pereira Bannwart 				RA: 15171572
+ *		Felipe Moreira Ferreira 		 	RA: 16116469
+ *		Luiz Felipe Zerbetto Masson 	RA: 15166804
+ *		Matheus Manganeli de Macedo 	RA: 16250276
+ *		Rodrigo da Silva Cardoso 			RA: 16430126
+ *
+ *	 Operações Auxiliares
+ */
+
 #include "CommonLib.h"
 
 MODULE_AUTHOR("Felipe Ferreira");
@@ -70,6 +84,9 @@ int     arrangeText( char input[], char **output, int size )
 {
     int   i = 1, actualSize = 0;
 
+    if( (*output) != NULL )
+        vfree((*output));
+
     while ( actualSize == 0 )
     {
         if( (i * KEY_LENGHT) >= size )
@@ -95,7 +112,7 @@ int     arrangeText( char input[], char **output, int size )
 
     return  actualSize;
     output_free:
-      return 0;
+      return -1;
 }
 
 void    printHex( char input[], int size, char *info )
@@ -127,9 +144,12 @@ int     validate( char *source, char **destiny, int size )
 {
     int count = 0;
 
+    if( (*destiny) != NULL )
+        vfree((*destiny));
+
     if ( (size % 2) != 0 )
     {
-        pr_err("[%s] | validate -- source hasn't even lenght!\n", DEVICE_NAME);
+        pr_err("[%s] | validate -- Source hasn't Even lenght!\n", DEVICE_NAME);
         return -1;
     }
 

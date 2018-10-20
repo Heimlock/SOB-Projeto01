@@ -1,4 +1,18 @@
 
+/*
+ *		Sistemas Operacionais B
+ *		Projeto 01 - Módulo Criptográfico
+ *
+ *	Integrantes:
+ *		Bruno Pereira Bannwart 				RA: 15171572
+ *		Felipe Moreira Ferreira 		 	RA: 16116469
+ *		Luiz Felipe Zerbetto Masson 	RA: 15166804
+ *		Matheus Manganeli de Macedo 	RA: 16250276
+ *		Rodrigo da Silva Cardoso 			RA: 16430126
+ *
+ *	 Programa Utilizado para facilitar na Comunicação com o Módulo
+ */
+
 #include<stdio.h>
 #include<stdlib.h>
 #include<errno.h>
@@ -15,9 +29,9 @@ typedef	enum STATES	{
 
 static char receive[BUFFER_LENGTH];
 
-void  show_hash_result(char * hash_sha256);
+void    show_hash_result(char * hash_sha256);
 
-int   main( int argc, char *argv[] )
+int     main( int argc, char *argv[] )
 {
     int i;
     int fd, operation = -1, bytesRead = 0;
@@ -75,29 +89,11 @@ int   main( int argc, char *argv[] )
      case ENCRYPT:
      {
        printf("[TestProgram] | The received message is: '%s'\n", receive);
-       // sprintf( command, "d %s", receive );
-       // // Send the string to the Module
-       // if ( write(fd, command, strlen(command)) < 0 )
-       // {
-       //     perror("[TestProgram] | Failed to write the message to the device.");
-       //     return errno;
-       // }
-       // for( i = 0; i < BUFFER_LENGTH; i++ )
-       //    receive[i] = 0;
-       // // Read the response from the Module
-       // bytesRead = read(fd, receive, BUFFER_LENGTH);
-       // if ( bytesRead < 0 )
-       // {
-       //    perror("[TestProgram] | Failed to read the message from the device.");
-       //    return errno;
-       // }
-       // printf("[TestProgram] | The received message is: '%s'\n", receive);
        break;
      }
      case DECRYPT:
      {
        printf("[TestProgram] | The received message is: '%s'\n", receive);
-       // printf( "[TestProgram] | Not Implemented yet\n");
        break;
      }
      case SUMHASH:
