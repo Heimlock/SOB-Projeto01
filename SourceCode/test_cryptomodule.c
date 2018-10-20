@@ -1,4 +1,18 @@
 
+/*
+ *		Sistemas Operacionais B
+ *		Projeto 01 - Módulo Criptográfico
+ *
+ *	Integrantes:
+ *		Bruno Pereira Bannwart 				RA: 15171572
+ *		Felipe Moreira Ferreira 		 	RA: 16116469
+ *		Luiz Felipe Zerbetto Masson 	RA: 15166804
+ *		Matheus Manganeli de Macedo 	RA: 16250276
+ *		Rodrigo da Silva Cardoso 			RA: 16430126
+ *
+ *	 Programa Utilizado para facilitar na Comunicação com o Módulo
+ */
+
 #include<stdio.h>
 #include<stdlib.h>
 #include<errno.h>
@@ -15,13 +29,14 @@ typedef	enum STATES	{
 
 static char receive[BUFFER_LENGTH];
 
-void show_hash_result(char * hash_sha256);
+void    show_hash_result(char * hash_sha256);
 
-int main( int argc, char *argv[] )
+int     main( int argc, char *argv[] )
 {
-    int fd, operation = -1;
-    // char stringToSend[BUFFER_LENGTH] = "c Felipe Ferreira";
-    char *stringToSend ;
+    int i;
+    int fd, operation = -1, bytesRead = 0;
+    char  command[80];
+    char *stringToSend;
 
     if( argc < 2 )
     {
@@ -35,7 +50,7 @@ int main( int argc, char *argv[] )
     }
     stringToSend  = argv[1];
 
-   printf("[TestProgram] | Initialized\n");
+    printf("\n\n[TestProgram] | Initialized\n");
 
     printf("[TestProgram] | Opening the device '%s'.\n", DEVICE);
     // Open the device with read/write access
@@ -58,7 +73,8 @@ int main( int argc, char *argv[] )
 
    printf("[TestProgram] | Reading from the device...\n");
    // Read the response from the Module
-   if ( read(fd, receive, BUFFER_LENGTH) < 0 )
+   bytesRead = read(fd, receive, BUFFER_LENGTH);
+   if ( bytesRead < 0 )
    {
       perror("[TestProgram] | Failed to read the message from the device.");
       return errno;
@@ -73,13 +89,11 @@ int main( int argc, char *argv[] )
      case ENCRYPT:
      {
        printf("[TestProgram] | The received message is: '%s'\n", receive);
-       // printf( "[TestProgram] | Not Implemented yet\n");
        break;
      }
      case DECRYPT:
      {
        printf("[TestProgram] | The received message is: '%s'\n", receive);
-       // printf( "[TestProgram] | Not Implemented yet\n");
        break;
      }
      case SUMHASH:
@@ -89,7 +103,7 @@ int main( int argc, char *argv[] )
      }
    }
 
-   printf("[TestProgram] | Terminated\n");
+   printf("[TestProgram] | Terminated\n\n\n");
    return 0;
 }
 

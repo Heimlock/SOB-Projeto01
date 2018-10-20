@@ -1,4 +1,19 @@
 
+/*
+ *		Sistemas Operacionais B
+ *		Projeto 01 - Módulo Criptográfico
+ *
+ *	Integrantes:
+ *		Bruno Pereira Bannwart 				RA: 15171572
+ *		Felipe Moreira Ferreira 		 	RA: 16116469
+ *		Luiz Felipe Zerbetto Masson 	RA: 15166804
+ *		Matheus Manganeli de Macedo 	RA: 16250276
+ *		Rodrigo da Silva Cardoso 			RA: 16430126
+ *
+ *	 Main
+ */
+
+#define  __MASTER
 #include "CommonLib.h"
 
 MODULE_LICENSE("GPL");
@@ -7,38 +22,33 @@ MODULE_DESCRIPTION("Main File");
 MODULE_SUPPORTED_DEVICE(DEVICE_NAME);
 
 module_param(key, charp, 0000);
-MODULE_PARM_DESC(key, "Key String - 16bits lenght");
+MODULE_PARM_DESC(key, "Key String - 32bytes lenght");
 
 static int __init cryptomodule_init(void)
 {
-    int i;
+    int   i;
+    char  *keyBuffer =  NULL;
+
+    printk("============================================================\n");
     pr_info("[%s] | Initializated\n", DEVICE_NAME);
 
-    for( i = 0; i < (KEY_LENGHT+1); i++ )
+    //  Verify if Key is Valid
+    if( validate( key, &keyBuffer, (2 * KEY_LENGHT) ) != 0 )
     {
-        if( key[i] == '\0' )
-            key[i] = '0';
-
-        //  Verify if it has reached the end
-        if( i == (KEY_LENGHT) )
-        {
-            key[i] = '\0';
-            break;
-        }
+        pr_err( "[%s] | ERROR! validate Function\n", DEVICE_NAME);
+        memset( keyHex, 0, KEY_LENGHT );
     }
-
-    pr_info("[%s] | Key is a string: %s\n", DEVICE_NAME, key);
+    else
+    {
+        deserialize( keyBuffer, keyHex, (2 * KEY_LENGHT) );
+        vfree( keyBuffer );
+    }
+    printHex( keyHex, KEY_LENGHT, "Key Received......" );
 
     if( init_fops() != 0 )
     {
         pr_crit("[%s] | ERRO! <init_fops>\n", DEVICE_NAME);
     }
-
-    // char *plaintext = "Felipe Moreira Ferreira";
-    // char hash_sha256[SHA256_LENGTH];
-    // sumHash( plaintext, hash_sha256 );
-    // show_hash_result( plaintext, hash_sha256 );
-
     return 0;
 }
 
@@ -47,6 +57,7 @@ static void __exit cryptomodule_exit(void)
     cleanup_fops();
 
     pr_info("[%s] | Terminated\n", DEVICE_NAME);
+    printk("============================================================\n");
 }
 
 module_init(cryptomodule_init);
