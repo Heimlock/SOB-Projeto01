@@ -6,8 +6,8 @@
  *	Integrantes:
  *		Bruno Pereira Bannwart 				RA: 15171572
  *		Felipe Moreira Ferreira 		 	RA: 16116469
- *		Luiz Felipe Zerbetto Masson 	    RA: 15166804
- *		Matheus Manganeli de Macedo 	    RA: 16250276
+ *		Luiz Felipe Zerbetto Masson 	        RA: 15166804
+ *		Matheus Manganeli de Macedo 	        RA: 16250276
  *		Rodrigo da Silva Cardoso 			RA: 16430126
  *
  *	 Operações Auxiliares
